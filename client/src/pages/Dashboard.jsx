@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { MapPin, Clock, ThumbsUp, MessageCircle, Share2, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import IncidentForm from '../components/IncidentForm';
 import IncidentMap from '../components/IncidentMap';
+import IncidentPost from '../components/IncidentPost';
 
 export default function Dashboard() {
   const [incidents, setIncidents] = useState([]);
@@ -27,19 +28,6 @@ export default function Dashboard() {
   useEffect(() => {
     fetchIncidents();
   }, []);
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'under investigation':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'resolved':
-        return 'bg-green-100 text-green-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -121,55 +109,7 @@ export default function Dashboard() {
         ) : view === 'feed' ? (
           <div className="space-y-6">
             {incidents.map((incident) => (
-              <div key={incident.id} className="bg-white rounded-lg shadow">
-                {/* Post Header */}
-                <div className="p-4 border-b">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className="bg-red-100 rounded-full p-2">
-                        <AlertTriangle className="h-5 w-5 text-red-600" />
-                      </div>
-                      <div>
-                        <p className="font-semibold">Incident Report</p>
-                        <div className="flex items-center text-sm text-gray-500">
-                          <Clock className="h-4 w-4 mr-1" />
-                          <span>{new Date(incident.created_at).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(incident.status)}`}>
-                      {incident.status}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Post Content */}
-                <div className="p-4">
-                  <p className="text-gray-800 mb-4">{incident.description}</p>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    <span>
-                      {incident.latitude.toFixed(4)}, {incident.longitude.toFixed(4)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Post Actions */}
-                <div className="flex items-center justify-around p-4 border-t">
-                  <button className="flex items-center space-x-2 text-gray-600 hover:text-red-600">
-                    <ThumbsUp className="h-5 w-5" />
-                    <span>Support</span>
-                  </button>
-                  <button className="flex items-center space-x-2 text-gray-600 hover:text-red-600">
-                    <MessageCircle className="h-5 w-5" />
-                    <span>Comment</span>
-                  </button>
-                  <button className="flex items-center space-x-2 text-gray-600 hover:text-red-600">
-                    <Share2 className="h-5 w-5" />
-                    <span>Share</span>
-                  </button>
-                </div>
-              </div>
+              <IncidentPost key={incident.id} incident={incident} />
             ))}
           </div>
         ) : (
