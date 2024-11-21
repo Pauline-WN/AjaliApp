@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import { toast } from 'react-hot-toast';
+import { Camera, Video, MapPin } from 'lucide-react';
 import axios from 'axios';
 
 function LocationMarker({ position, setPosition }) {
@@ -29,59 +29,72 @@ export default function IncidentForm({ onSuccess }) {
         longitude: position[1],
       }, { withCredentials: true });
 
-      toast.success('Incident reported successfully');
       setDescription('');
       onSuccess?.();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to report incident');
+      console.error('Error submitting incident:', error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-          Incident Description
-        </label>
-        <textarea
-          id="description"
-          rows={4}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
-          placeholder="Describe the incident..."
-          required
-        />
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <textarea
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Describe the incident..."
+        className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+        rows={4}
+        required
+      />
+
+      <div className="h-[200px] rounded-lg overflow-hidden border border-gray-200">
+        <MapContainer
+          center={position}
+          zoom={13}
+          className="h-full w-full"
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          <LocationMarker position={position} setPosition={setPosition} />
+        </MapContainer>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Click on the map to set incident location
-        </label>
-        <div className="h-[300px] rounded-lg overflow-hidden">
-          <MapContainer
-            center={position}
-            zoom={13}
-            className="h-full w-full"
+      <div className="flex items-center justify-between">
+        <div className="flex space-x-4">
+          <button
+            type="button"
+            className="flex items-center space-x-2 text-gray-600 hover:text-red-600"
           >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            <LocationMarker position={position} setPosition={setPosition} />
-          </MapContainer>
+            <Camera className="h-5 w-5" />
+            <span>Photo</span>
+          </button>
+          <button
+            type="button"
+            className="flex items-center space-x-2 text-gray-600 hover:text-red-600"
+          >
+            <Video className="h-5 w-5" />
+            <span>Video</span>
+          </button>
+          <button
+            type="button"
+            className="flex items-center space-x-2 text-gray-600 hover:text-red-600"
+          >
+            <MapPin className="h-5 w-5" />
+            <span>Location</span>
+          </button>
         </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+        >
+          {loading ? 'Reporting...' : 'Report Incident'}
+        </button>
       </div>
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
-      >
-        {loading ? 'Reporting...' : 'Report Incident'}
-      </button>
     </form>
   );
 }
