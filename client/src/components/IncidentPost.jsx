@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapPin, Clock, ThumbsUp, MessageCircle, Share2, AlertTriangle, Send } from 'lucide-react';
+import { MapPin, Clock, ThumbsUp, MessageCircle, Share2, AlertTriangle, Send, Image as ImageIcon, Video } from 'lucide-react';
 
 export default function IncidentPost({ incident }) {
   const [isLiked, setIsLiked] = useState(false);
@@ -7,6 +7,7 @@ export default function IncidentPost({ incident }) {
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
+  const [selectedMedia, setSelectedMedia] = useState(null);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -42,10 +43,13 @@ export default function IncidentPost({ incident }) {
         url: window.location.href,
       });
     } catch (error) {
-      // Fallback for browsers that don't support native sharing
       navigator.clipboard.writeText(window.location.href);
       alert('Link copied to clipboard!');
     }
+  };
+
+  const getMediaUrl = (url) => {
+    return `http://localhost:5000${url}`;
   };
 
   return (
@@ -74,6 +78,44 @@ export default function IncidentPost({ incident }) {
       {/* Post Content */}
       <div className="p-4">
         <p className="text-gray-800 mb-4">{incident.description}</p>
+        
+        {/* Media Grid */}
+        {(incident.images?.length > 0 || incident.videos?.length > 0) && (
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            {incident.images?.map((image, index) => (
+              <div
+                key={`image-${index}`}
+                className="relative cursor-pointer aspect-video bg-gray-100 rounded-lg overflow-hidden"
+                onClick={() => setSelectedMedia({ type: 'image', url: getMediaUrl(image.image_url) })}
+              >
+                <img
+                  src={getMediaUrl(image.image_url)}
+                  alt={`Evidence ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 rounded-full p-1">
+                  <ImageIcon className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            ))}
+            {incident.videos?.map((video, index) => (
+              <div
+                key={`video-${index}`}
+                className="relative cursor-pointer aspect-video bg-gray-100 rounded-lg overflow-hidden"
+                onClick={() => setSelectedMedia({ type: 'video', url: getMediaUrl(video.video_url) })}
+              >
+                <video
+                  src={getMediaUrl(video.video_url)}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 rounded-full p-1">
+                  <Video className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="flex items-center text-sm text-gray-500">
           <MapPin className="h-4 w-4 mr-1" />
           <span>
@@ -81,6 +123,31 @@ export default function IncidentPost({ incident }) {
           </span>
         </div>
       </div>
+
+      {/* Media Modal */}
+      {selectedMedia && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedMedia(null)}
+        >
+          <div className="max-w-4xl max-h-[90vh] w-full">
+            {selectedMedia.type === 'image' ? (
+              <img
+                src={selectedMedia.url}
+                alt="Evidence"
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <video
+                src={selectedMedia.url}
+                controls
+                className="w-full h-full"
+                autoPlay
+              />
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Interaction Stats */}
       {(likesCount > 0 || comments.length > 0) && (

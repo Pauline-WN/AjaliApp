@@ -20,5 +20,20 @@ class IncidentReport(db.Model, SerializerMixin):
     # Relationship to User with back-populate
     user = db.relationship('User', back_populates='reports')
     # One-to-Many relationships with media models using back-populate
-    images = db.relationship('IncidentImage', back_populates='incident', lazy=True)
-    videos = db.relationship('IncidentVideo', back_populates='incident', lazy=True)
+    images = db.relationship('IncidentImage', back_populates='incident', lazy=True,
+cascade='all, delete-orphan')
+    videos = db.relationship('IncidentVideo', back_populates='incident', lazy=True, 
+cascade='all, delete-orphan')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'description': self.description,
+            'status': self.status,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'created_at': self.created_at.isoformat(),
+            'user_id': self.user_id,
+            'images': [image.to_dict() for image in self.images],
+            'videos': [video.to_dict() for video in self.videos]
+        }

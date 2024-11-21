@@ -11,6 +11,13 @@ class IncidentVideo(db.Model, SerializerMixin):
     report_id = db.Column(db.Integer, db.ForeignKey('incident_reports.id'), nullable=False)
     video_url = db.Column(db.String(255), nullable=False)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'report_id': self.report_id,
+            'video_url': self.video_url
+        }
+
     # Relationship to IncidentReport with back-populate
     incident = db.relationship('IncidentReport', back_populates='videos')
 
